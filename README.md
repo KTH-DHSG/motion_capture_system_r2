@@ -1,8 +1,4 @@
-# mocap4ros_qualisys
-
-[![GitHub Action Status](https://github.com/MOCAP4ROS2-Project/mocap4ros2_qualisys/actions/workflows/main.yaml/badge.svg)](https://github.com/MOCAP4ROS2-Project/qualisys_driver)
-
-[![codecov](https://codecov.io/gh/MOCAP4ROS2-Project/mocap_optitrack_driver/main/graph/badge.svg)](https://codecov.io/gh/MOCAP4ROS2-Project/mocap_optitrack_driver)
+# motion_capture_system_r2
 
 Requisites: qualisys_cpp_skd
 
@@ -26,11 +22,11 @@ Source workspace:
 ```
 source install/setup.bash
 ```
-Setup your qualisys configuration:
+Setup your qualisys configuration (qualysis server IP is 10.0.0.10):
 ```
 mocap_ws/src/mocap4ros2_qualisys/qualisys_driver/config/qualisys_driver_params.yaml
 ```
-Launch qualisys system:
+Launch qualisys system (not working at the moment):
 ```
 ros2 launch qualisys_driver qualisys.launch.py
 ```
