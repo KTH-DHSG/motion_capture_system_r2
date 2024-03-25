@@ -44,6 +44,8 @@
 #include "mocap4r2_msgs/msg/rigid_body.hpp"
 #include "mocap4r2_msgs/msg/rigid_bodies.hpp"
 
+#include "geometry_msgs/msg/pose_stamped.hpp"
+
 #include "std_msgs/msg/empty.hpp"
 #include "std_msgs/msg/string.hpp"
 
@@ -99,9 +101,14 @@ private:
   int n_unlabeled_markers_;
   std::shared_ptr<rclcpp::Client<lifecycle_msgs::srv::ChangeState>> client_change_state_;
   rclcpp_lifecycle::LifecyclePublisher<mocap4r2_msgs::msg::Markers>::SharedPtr mocap_markers_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<mocap4r2_msgs::msg::RigidBodies>::SharedPtr
-    mocap_rigid_bodies_pub_;
+  //rclcpp_lifecycle::LifecyclePublisher<mocap4r2_msgs::msg::RigidBodies>::SharedPtr
+  //  mocap_rigid_bodies_pub_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Empty>::SharedPtr update_pub_;
+
+  rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::PoseStamped>::SharedPtr* mocap_rigid_bodies_pub_ptr;
+  int num_rigid_bodies = 0;
+  bool first_packet = true;
+
 };
 
 static
