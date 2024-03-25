@@ -28,7 +28,7 @@ source install/setup.bash
 ```
 Setup your qualisys configuration (qualysis server IP is 10.0.0.10):
 ```
-mocap_ws/src/mocap4ros2_qualisys/qualisys_driver/config/qualisys_driver_params.yaml
+mocap_ws/src/motion_capture_system_r2/qualisys_driver/config/qualisys_driver_params.yaml
 ```
 Launch qualisys system:
 ```
