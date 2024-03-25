@@ -42,3 +42,5 @@ ros2 launch mocap_marker_viz mocap_marker_viz.launch.py mocap_system:=qualisys
 ## Published topics
 
 - /qualisys/{subject_name}/pose ([geometry_msgs/PoseStamped](http://docs.ros.org/en/api/geometry_msgs/html/msg/PoseStamped.html))
+
+where {subject_name} stands for the name given to the rigid body. 
