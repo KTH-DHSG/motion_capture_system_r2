@@ -1,5 +1,7 @@
 # motion_capture_system_r2
 
+Package for using the motion capture system with ROS2. Use [motion_capture_system](https://github.com/KTH-DHSG/motion_capture_system) for use with ROS1.
+
 Requisites: qualisys_cpp_skd
 
 Create workspace:
