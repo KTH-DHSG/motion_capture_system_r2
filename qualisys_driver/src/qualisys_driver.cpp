@@ -125,8 +125,21 @@ void QualisysDriver::process_packet(CRTPacket * const packet)
   }
   last_frame_number_ = frame_number;
 
-  bool all_active = false;
-  if (mocap_markers_pub_->is_activated()){ 
+  if (this->first_packet){
+    this->num_rigid_bodies = rb_count;
+    mocap_rigid_bodies_pub_ptr = new rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::PoseStamped>::SharedPtr[rb_count];
+    for(unsigned int i = 0; i < rb_count; i++){
+      // create a publisher
+      std::string topic_name = std::string("/qualisys/") + 
+                                  port_protocol_.Get6DOFBodyName(i) + 
+                                  std::string("/pose");
+      (this->mocap_rigid_bodies_pub_ptr)[i] = create_publisher<geometry_msgs::msg::PoseStamped>(topic_name, rclcpp::QoS(1000));
+      (this->mocap_rigid_bodies_pub_ptr)[i]->on_activate();
+    }
+    this->first_packet = false;
+  }
+
+  if (mocap_markers_pub_->is_activated() && this->num_rigid_bodies != 0){ 
       for(unsigned int i = 0; i < this->num_rigid_bodies; i++)
           if( !(this->mocap_rigid_bodies_pub_ptr)[i]->is_activated() ) {
               return;
@@ -154,21 +167,6 @@ void QualisysDriver::process_packet(CRTPacket * const packet)
 
     mocap_markers_pub_->publish(markers_msg);
   }
-
-  if (this->first_packet){
-    this->num_rigid_bodies = rb_count;
-    mocap_rigid_bodies_pub_ptr = new rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::PoseStamped>::SharedPtr[rb_count];
-    for(unsigned int i = 0; i < rb_count; i++){
-      // create a publisher
-      std::string topic_name = std::string("/qualisys/") + 
-                                  port_protocol_.Get6DOFBodyName(i) + 
-                                  std::string("/pose");
-      (this->mocap_rigid_bodies_pub_ptr)[i] = create_publisher<geometry_msgs::msg::PoseStamped>(topic_name, rclcpp::QoS(1000));
-      (this->mocap_rigid_bodies_pub_ptr)[i]->on_activate();
-    }
-    this->first_packet = false;
-  }
-
 
   if (true){ //mocap_rigid_bodies_pub_->get_subscription_count() > 0 || ) {
 
