@@ -125,9 +125,13 @@ void QualisysDriver::process_packet(CRTPacket * const packet)
   }
   last_frame_number_ = frame_number;
 
-  if (!mocap_markers_pub_->is_activated() && !mocap_rigid_bodies_pub_->is_activated() ) {
-    return;
-  }
+  bool all_active = false;
+  if (mocap_markers_pub_->is_activated()){ 
+      for(unsigned int i = 0; i < this->num_rigid_bodies; i++)
+          if( !(this->mocap_rigid_bodies_pub_ptr)[i]->is_activated() ) {
+              return;
+          }
+  } else {return;}
 
   if (mocap_markers_pub_->get_subscription_count() > 0) {
     mocap4r2_msgs::msg::Markers markers_msg;
