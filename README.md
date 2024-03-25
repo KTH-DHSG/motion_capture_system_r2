@@ -12,11 +12,11 @@ mkdir -p mocap_ws/src && cd mocap_ws/src
 ```
 Download qualisys repo recursively to get https://github.com/qualisys/qualisys_cpp_sdk, or set QualisysSDK_PATH:
 ```
-git clone --recursive https://github.com/MOCAP4ROS2-Project/mocap4ros2_qualisys.git
+git clone --recursive https://github.com/KTH-DHSG/motion_capture_system_r2.git
 ```
 Install dependencies:
 ```
-vcs import < mocap4ros2_qualisys/dependency_repos.repos
+vcs import < motion_capture_system_r2/dependency_repos.repos
 ```
 Compiling workspace:
 ```
