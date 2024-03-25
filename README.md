@@ -2,6 +2,8 @@
 
 Package for using the motion capture system with ROS2. Use [motion_capture_system](https://github.com/KTH-DHSG/motion_capture_system) for use with ROS1.
 
+## How to use
+
 Requisites: qualisys_cpp_skd
 
 Create workspace:
@@ -28,11 +30,15 @@ Setup your qualisys configuration (qualysis server IP is 10.0.0.10):
 ```
 mocap_ws/src/mocap4ros2_qualisys/qualisys_driver/config/qualisys_driver_params.yaml
 ```
-Launch qualisys system (not working at the moment):
+Launch qualisys system:
 ```
 ros2 launch qualisys_driver qualisys.launch.py
 ```
-Visualize in rViz:
+Visualize in rViz (not working at the moment):
 ```
 ros2 launch mocap_marker_viz mocap_marker_viz.launch.py mocap_system:=qualisys
 ```
+
+## Published topics
+
+- /qualisys/{subject_name}/pose ([geometry_msgs/PoseStamped](http://docs.ros.org/en/api/geometry_msgs/html/msg/PoseStamped.html))
