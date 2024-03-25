@@ -151,34 +151,82 @@ void QualisysDriver::process_packet(CRTPacket * const packet)
     mocap_markers_pub_->publish(markers_msg);
   }
 
-  if (mocap_rigid_bodies_pub_->get_subscription_count() > 0) {
+  if (this->first_packet){
+    this->num_rigid_bodies = rb_count;
+    mocap_rigid_bodies_pub_ptr = new rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::PoseStamped>::SharedPtr[rb_count];
+    for(unsigned int i = 0; i < rb_count; i++){
+      // create a publisher
+      std::string topic_name = std::string("/qualisys/") + 
+                                  port_protocol_.Get6DOFBodyName(i) + 
+                                  std::string("/pose");
+      (this->mocap_rigid_bodies_pub_ptr)[i] = create_publisher<geometry_msgs::msg::PoseStamped>(topic_name, rclcpp::QoS(1000));
+      (this->mocap_rigid_bodies_pub_ptr)[i]->on_activate();
+    }
+    this->first_packet = false;
+  }
+
+
+  if (true){ //mocap_rigid_bodies_pub_->get_subscription_count() > 0 || ) {
+
+    /*
     mocap4r2_msgs::msg::RigidBodies msg_rb;
     msg_rb.header.frame_id = "map";
-    msg_rb.header.stamp = rclcpp::Clock().now();
+    auto stamp = rclcpp::Clock().now();
+    msg_rb.header.stamp = stamp;
     msg_rb.frame_number = frame_number;
+    */
 
+    auto stamp = rclcpp::Clock().now();
     for (unsigned int i = 0; i < rb_count; i++) {
-      mocap4r2_msgs::msg::RigidBody rb;
+      
+      if (this->mocap_rigid_bodies_pub_ptr[i]->get_subscription_count() > 0){
+        //
+        geometry_msgs::msg::PoseStamped msg_rb_pose;
+        msg_rb_pose.header.frame_id = "map";
+        msg_rb_pose.header.stamp = stamp;
+        // msg_rb_pose.header.frame_number = frame_number;
+        //
 
-      float x, y, z;
-      float rot_matrix[9];
-      // Get6DOFBody(unsigned int nBodyIndex, float &fX, float &fY, float &fZ, float afRotMatrix[9]);
-      packet->Get6DOFBody(i, x, y, z, rot_matrix);
-      Quaternion quaternion = matrixToQuaternion(rot_matrix);
+        // mocap4r2_msgs::msg::RigidBody rb;
 
-      rb.rigid_body_name = std::to_string(i);
-      rb.pose.position.x = x / 1000;
-      rb.pose.position.y = y / 1000;
-      rb.pose.position.z = z / 1000;
-      rb.pose.orientation.x = quaternion.x;
-      rb.pose.orientation.y = quaternion.y;
-      rb.pose.orientation.z = quaternion.z;
-      rb.pose.orientation.w = quaternion.w;
+        float x, y, z;
+        float rot_matrix[9];
+        // Get6DOFBody(unsigned int nBodyIndex, float &fX, float &fY, float &fZ, float afRotMatrix[9]);
+        packet->Get6DOFBody(i, x, y, z, rot_matrix);
+        Quaternion quaternion = matrixToQuaternion(rot_matrix);
+        
+        //
+        msg_rb_pose.pose.position.x = x / 1000;
+        msg_rb_pose.pose.position.y = y / 1000;
+        msg_rb_pose.pose.position.z = z / 1000;
+        msg_rb_pose.pose.orientation.x = quaternion.x;
+        msg_rb_pose.pose.orientation.y = quaternion.y;
+        msg_rb_pose.pose.orientation.z = quaternion.z;
+        msg_rb_pose.pose.orientation.w = quaternion.w;
+        //
 
-      msg_rb.rigidbodies.push_back(rb);
+        /*
+        // rb.rigid_body_name = std::to_string(i);
+        rb.rigid_body_name = port_protocol_.Get6DOFBodyName(i);
+        rb.pose.position.x = x / 1000;
+        rb.pose.position.y = y / 1000;
+        rb.pose.position.z = z / 1000;
+        rb.pose.orientation.x = quaternion.x;
+        rb.pose.orientation.y = quaternion.y;
+        rb.pose.orientation.z = quaternion.z;
+        rb.pose.orientation.w = quaternion.w;
+
+
+        msg_rb.rigidbodies.push_back(rb);
+        */
+
+        //
+        (this->mocap_rigid_bodies_pub_ptr)[i]->publish(msg_rb_pose);
+        //
+      }
     }
 
-    mocap_rigid_bodies_pub_->publish(msg_rb);
+    // mocap_rigid_bodies_pub_->publish(msg_rb);
   }
 }
 
@@ -232,8 +280,8 @@ CallbackReturnT QualisysDriver::on_configure(const rclcpp_lifecycle::State &)
   mocap_markers_pub_ = create_publisher<mocap4r2_msgs::msg::Markers>(
     "/markers", 100);
 
-  mocap_rigid_bodies_pub_ = create_publisher<mocap4r2_msgs::msg::RigidBodies>(
-    "rigid_bodies", rclcpp::QoS(1000));
+  //mocap_rigid_bodies_pub_ = create_publisher<mocap4r2_msgs::msg::RigidBodies>(
+  //  "rigid_bodies", rclcpp::QoS(1000));
 
   update_pub_ = create_publisher<std_msgs::msg::Empty>(
     "/qualisys_driver/update_notify", qos);
@@ -251,7 +299,7 @@ CallbackReturnT QualisysDriver::on_activate(const rclcpp_lifecycle::State &)
   RCLCPP_INFO(get_logger(), "State label [%s]", get_current_state().label().c_str());
   update_pub_->on_activate();
   mocap_markers_pub_->on_activate();
-  mocap_rigid_bodies_pub_->on_activate();
+  //mocap_rigid_bodies_pub_->on_activate();
   bool success = connect_qualisys();
 
   if (success) {
@@ -274,7 +322,8 @@ CallbackReturnT QualisysDriver::on_deactivate(const rclcpp_lifecycle::State &)
   timer_->reset();
   update_pub_->on_deactivate();
   mocap_markers_pub_->on_deactivate();
-  mocap_rigid_bodies_pub_->on_deactivate();
+  // mocap_rigid_bodies_pub_->on_deactivate();
+  for (int i = 0; i < this->num_rigid_bodies; i++) (this->mocap_rigid_bodies_pub_ptr)[i]->on_deactivate();
   stop_qualisys();
   RCLCPP_INFO(get_logger(), "Deactivated!\n");
 
@@ -287,7 +336,8 @@ CallbackReturnT QualisysDriver::on_cleanup(const rclcpp_lifecycle::State &)
   RCLCPP_INFO(get_logger(), "State label [%s]", get_current_state().label().c_str());
   update_pub_.reset();
   mocap_markers_pub_.reset();
-  mocap_rigid_bodies_pub_.reset();
+  // mocap_rigid_bodies_pub_.reset();
+  for (int i = 0; i < this->num_rigid_bodies; i++) (this->mocap_rigid_bodies_pub_ptr)[i].reset();
   timer_->reset();
   RCLCPP_INFO(get_logger(), "Cleaned up!\n");
 
